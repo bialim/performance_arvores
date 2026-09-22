@@ -64,20 +64,52 @@ Tabela com a complexidade assintótica (Big-O) teórica de cada operação imple
 ---
 
 ## 3. Plano de Testes
+Dataset de Ensaio: INFLUD19-23-03-2026.csv (N = 48,941 registros de notificações de SRAG).
 
 ### 3.1 Objetivo dos Testes
-Descreva o que o grupo pretende validar (corretude do algoritmo, desempenho, comportamento em limites do dataset, etc.).
+
+Ambiente de Execução: Linux x86_64, Windows 11 x86_64 / Compilador GCC 13.2.0 
+
+  O grupo pretende validar empiricamente a corretude funcional, a integridade matemática das regras de balanceamento e o desempenho temporal espacial das implementações em C da Árvore AVL e da Árvore 2-3-4 sobre o dataset real de 48,941 registos de SRAG. Especificamente, os testes visam:
+
+Validar as Operações Fundamentais (CRUD): Garantir a precisão na inserção, pesquisa e remoção de registos através da chave composta alfanumérica.
+
+Comprovar o Balanceamento Dinâmico: Confirmar que as rotações (AVL) e as divisões de nós (splits preemptivos na 2-3-4) mantêm a altura da árvore dentro dos limites logarítmicos O(log N).
+
+Analisar a Tolerância a Dados Ordenados: Avaliar o comportamento de ambas as estruturas sob inserção estritamente cronológica (pior caso de inserção em BSTs simples).
+
+Garantir a Sanidade da Memória e Persistência: Confirmar a ausência de memory leaks via Valgrind e validar a reconstrução exata da árvore após simulação de reinicialização do sistema (reboot test).
+
 
 ### 3.2 Cenários de Teste
 
 | # | Cenário | Entrada | Resultado Esperado | Status |
 | :-: | :--- | :--- | :--- | :-: |
-| 1 | |  |  | [ ] |
-| 2 | |  | | [ ] |
-| 3 |  |  | | [ ] |
+| 1 | Inserção e Pesquisa Básica | inserir registo com chave 20230820-SP-123456 e pesquisar a chave. | Registo localizado com sucesso; retorno correto do offset_disco.  | [ x ] |
+| 2 | Carga Massiva do Dataset  | Inserção sequencial de N = 48,941 linhas do ficheiro INFLUX 19-23-03-2026.csv.  | Todos os 48,941 nós alocados; árvore mantida autobalançada sem estouro de pilha (Stack Overflow).  | [ x ] |
+| 3 | Validação de Ordenação (In-Order)  | Travessia Em-Ordem sobre 10,000 registos inseridos | Exibição das chaves em ordem estritamente alfabética e cronológica crescente.  | [ x ] |
+| 4 | Re-balanceamento AVL (Rotações)   | Inserção de chaves forçando casos de LL, RR, LR e RL.  | Rotações simples e duplas acionadas; Fator de Balanceamento FB {-1, 0, 1} em todos os nós. | [ x ] |
+| 5 | Divisão de Nó 2-3-4 (Splits)   | Inserção no 4º elemento de um Nó-4 cheio [K1, K2, K3]  | Divisão pré-emptiva (Top-Down Split) executada; chave promovida ao nó pai e folhas no mesmo nível.  | [ x ] |
+| 6 | Remoção de Nó Intermediário   | Exclusão de chave correspondente a um nó com 2 filhos. | Substituição da chave pelo sucessor Em-Ordem; re-balanceamento acionado sem perda de subárvores. | [ x ] |
+| 7 | Persistência em Ficheiro (Reboot Test)   | Serialização do índice em Pré-Ordem para disco, encerramento do processo e recarga.  | Reconstrução da árvore em RAM mantendo a mesma geometria e altura originais | [ x ] |
 
 ### 3.3 Casos Extremos (Edge Cases)
-Liste casos como: árvore vazia, único elemento, dados duplicados, dados em ordem crescente/decrescente (pior caso para BST), volume máximo do dataset, etc.
+
+Árvore Vazia: Executar pesquisa ou remoção numa árvore cuja raiz é NULL. O sistema deve retornar NULL ou mensagem informativa sem gerar falha de segmentação (Segmentation Fault).
+
+  Único Elemento: Inserir 1 registo e eliminá-lo em seguida. A raiz deve voltar ao estado NULL e a memória ser libertada corretamente.
+
+  Chaves Duplicadas (Notificações Repetidas): Tentar inserir duas vezes a mesma chave de notificação. O algoritmo deve atualizar o offset existente em vez de criar um nó duplicado.
+
+  Dados em Ordem Cronológica Crescente (Pior Caso de Inserção): Inserção de 48,941 registos ordenados por DT_NOTIFIC.
+Resultado na AVL: Rotações contínuas mantêm a altura limitada a 22 níveis.
+
+Resultado na 2-3-4: Divisões preemptivas mantêm todas as folhas estritamente no mesmo nível (altura aproximada de 8 a 9 níveis).
+
+Volume Máximo do Dataset (N = 48,941): Verificação de alocação de memória sob carga real.
+
+Libertação Total de Memória: Destruição completa da árvore via free_tree(). O analisador Valgrind deve reportar 0 bytes lost in 0 blocks.
+
 
 
 ### 3.4 Testes de Desempenho *(Para Entrega 2)*
