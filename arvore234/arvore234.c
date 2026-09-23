@@ -31,7 +31,7 @@ Arv234 buscaArv234 ( ItemArv v , Arv234 p ){
     return buscaArv234 ( v , p->ap [ i ] );
 }
 
-//insere item do banco de dados 
+//insere item do base de dados
 Arv234 insereArv234( ItemArv v , Arv234 raiz ){
     Arv234 p , pai , esq , dir , novoDir , novoEsq ;
     int i , split ;
