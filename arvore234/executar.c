@@ -47,8 +47,6 @@ int main(void) {
     printf("================================================================\n");
     printf("   ARVORE 2-3-4  --  Leitura do SIVEP-Gripe\n");
     printf("================================================================\n");
-    printf("Coloque o CSV na mesma pasta e use a opcao 1.\n");
-    printf("Sugestao de nome: INFLUD19-23-03-2026.csv\n");
 
     do {
         exibirMenu();
