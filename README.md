@@ -1,4 +1,4 @@
-# Comparação de Performance entre as Árvores AVL e 2-3-4 ao Analisar Dados Complexos da Gripe SRAG
+# Comparação de Performance entre as Árvores AVL e 2-3-4 ao Analisar Dados Complexos de Casos de SRAG no (2019-2026)
 
 Entrega 1 de trabalho da disciplina Estruturas de Dados II — UNICID Prof. Cid Rodrigues de Andrade </br>
 
@@ -19,30 +19,35 @@ Entrega 1 de trabalho da disciplina Estruturas de Dados II — UNICID Prof. Cid 
 ## 1. Dataset
 
 ### 1.1 Descrição
-Descreva o conjunto de dados utilizado nos testes: origem, domínio/assunto, formato (CSV, JSON, etc.) e volume de registros.  
-*Obs.: Os dados devem ser complexos/compostos, contendo entre 50 mil e 1 milhão de registros.*
+O conjunto de dados utilizado consiste em casos de Síndrome Respiratória Aguda Grave (SRAG) no Brasil (2019-2026), extraídos da base oficial SIVEP-Gripe do Ministério da Saúde. O arquivo encontra-se no formato CSV e contém quase 50 mil registros de pacientes. A planilha completa engloba informações sobre os pacientes e desfechos clínicos.
 
 ### 1.2 Fonte
-Link ou referência de onde o dataset foi obtido (ex.: Kaggle, API pública, dados gerados pelo grupo, etc.).
+Ministério da Saúde - Base de Dados SIVEP-Gripe (INFLUD19), obtida através de planilha disponibilizada no portal de **Dados Abertos do Ministério da Saúde** (https://dadosabertos.saude.gov.br/). O conjunto de dados é o "Banco de dados da Síndrome Respiratória Aguda Grave (SRAG) - 2019 a 2026", o arquivo específico utilizado neste projeto é o `INFLUD19-23-03-2026.csv`.
 
 ### 1.3 Estrutura dos Dados
 Descreva os campos/atributos relevantes que serão usados como chave de inserção, busca e comparação nas árvores:
-- `id` *(int)*: Identificador único / Chave principal
-- `nome` *(string)*: Campo descritivo
-- `valor` *(float)*: Atributo numérico de exemplo
+- `id` *(long long)*: Chave principal, identificador único do paciente.
+- `data_registro` *(string)*: Data de registro da notificação.
+- `cidade_estado` *(string)*: Município e Unidade Federativa combinados.
+- `sexo` *(string)*: Sexo do paciente.
+- `data_nascimento` *(string)*: Data de nascimento.
+- `desfecho` *(string)*: Evolução do caso (Cura, Óbito, etc.) com a data respectiva.
 
 ### 1.4 Justificativa da Escolha
-Explique o porquê este dataset é adequado para testar a(s) estrutura(s) de árvore escolhida(s) (volume, distribuição dos dados, tipo de chave, etc.).
+O DATASET SRAG/SIVEP-Gripe é adequado para testar estruturas de dados complexas, devido ao volume considerável de registros (quase 50 mil) e à utilização de identificadores (IDs) na forma de números inteiros longos. A necessidade de ordenar rapidamente esses IDs longos e associá-los a informações clínicas complexas simula perfeitamente o ambiente de um banco de dados real da área da saúde, exigindo alta performance tanto na inserção quanto na busca.
 
 ---
 
 ## 2. Estrutura(s) de Árvore Escolhida(s)
 
 ### 2.1 Estrutura(s)
-Liste a(s) árvore(s) implementada(s) (ex.: BST, AVL, Árvore Rubro-Negra, B-Tree, etc.).
+Foram implementadas e serão comparadas duas estruturas de busca auto-balanceáveis:
+1.  **Árvore AVL** (Adelson-Velsky e Landis)
+2.  **Árvore 2-3-4** (Árvore de Pesquisa Multivias)
 
 ### 2.2 Justificativa Técnica
-Por que essa(s) estrutura(s) foi(ram) escolhida(s) para este dataset e problema? Considere fatores como complexidade temporal, balanceamento automático e caso de uso ideal.
+-   **Árvore AVL:** Foi escolhida por ser rigorosamente balanceada. Para o SIVEP-Gripe, onde consultas a pacientes específicos pelo ID precisam ser muito rápidas, a AVL garante que o pior caso de busca seja altamente eficiente, mesmo com um volume gigantesco de dados. Ela mantém o equilíbrio verificando a altura e aplicando rotações a cada inserção desbalanceada.
+-   **Árvore 2-3-4:** Foi escolhida como contraponto à AVL, pois introduz o conceito de nós com múltiplos itens e filhos. Ao agrupar até 3 pacientes no mesmo nó e crescer "para cima" através de *splits* preemptivos (sem usar rotações), ela gera árvores muito mais achatadas. É excelente para comparar o desempenho de alocação de memória RAM contra simulações de acesso a disco (base teórica das B-Trees usadas em SGBDs reais).
 
 ### 2.3 Operações Implementadas *(Para Entrega 2)*
 - [ ] Inserção
@@ -57,60 +62,34 @@ Tabela com a complexidade assintótica (Big-O) teórica de cada operação imple
 
 | Operação | Melhor Caso | Caso Médio | Pior Caso |
 | :--- | :---: | :---: | :---: |
-| **Inserção** |  |  | |
-| **Busca** |  |  |  |
-| **Remoção** |  | |  |
+| **Inserção** | $O(1)$ | $O(\log N)$ | $O(\log N)$ |
+| **Busca** | $O(1)$ | $O(\log N)$ | $O(\log N)$ |
+| **Remoção** | $O(1)$ |$O(\log N)$ | $O(\log N)$ |
 
 ---
 
 ## 3. Plano de Testes
-Dataset de Ensaio: INFLUD19-23-03-2026.csv (N = 48,941 registros de notificações de SRAG).
+Dataset de Ensaio: `INFLUD19-23-03-2026.csv` (N = 48.942 registros).
 
 ### 3.1 Objetivo dos Testes
+Ambiente de Execução: Linux x86_64 / Windows 11 x86_64, Compilador GCC.
 
-Ambiente de Execução: Linux x86_64, Windows 11 x86_64 / Compilador GCC 13.2.0 
-
-  O grupo pretende validar empiricamente a corretude funcional, a integridade matemática das regras de balanceamento e o desempenho temporal espacial das implementações em C da Árvore AVL e da Árvore 2-3-4 sobre o dataset real de 48,941 registos de SRAG. Especificamente, os testes visam:
-
-Validar as Operações Fundamentais (CRUD): Garantir a precisão na inserção, pesquisa e remoção de registos através da chave composta alfanumérica.
-
-Comprovar o Balanceamento Dinâmico: Confirmar que as rotações (AVL) e as divisões de nós (splits preemptivos na 2-3-4) mantêm a altura da árvore dentro dos limites logarítmicos O(log N).
-
-Analisar a Tolerância a Dados Ordenados: Avaliar o comportamento de ambas as estruturas sob inserção estritamente cronológica (pior caso de inserção em BSTs simples).
-
-Garantir a Sanidade da Memória e Persistência: Confirmar a ausência de memory leaks via Valgrind e validar a reconstrução exata da árvore após simulação de reinicialização do sistema (reboot test).
-
+O grupo pretende validar empiricamente a integridade estrutural e comparar o desempenho (tempo e memória) das implementações em C da Árvore AVL e da Árvore 2-3-4 sobre o dataset SRAG. Os testes visam:
+-   **Validar Inserções Complexas:** Garantir o correto armazenamento, extração segura do CSV (tratando delimitadores) e alinhamento dos atributos clínicos na `struct`.
+-   **Comprovar Balanceamento:** Confirmar que as rotações matemáticas (AVL) e as divisões/splits (2-3-4) limitam o crescimento vertical estritamente em $O(\log N)$.
+-   **Avaliar Comportamento Sob Carga:** Inserir massivamente 49 mil IDs ordenados cronologicamente (pior caso em BSTs simples) e validar qual algoritmo auto-balanceável sofre menor latência.
 
 ### 3.2 Cenários de Teste
-
 | # | Cenário | Entrada | Resultado Esperado | Status |
 | :-: | :--- | :--- | :--- | :-: |
-| 1 | Inserção e Pesquisa Básica | inserir registo com chave 20230820-SP-123456 e pesquisar a chave. | Registo localizado com sucesso; retorno correto do offset_disco.  | [ x ] |
-| 2 | Carga Massiva do Dataset  | Inserção sequencial de N = 48,941 linhas do ficheiro INFLUX 19-23-03-2026.csv.  | Todos os 48,941 nós alocados; árvore mantida autobalançada sem estouro de pilha (Stack Overflow).  | [ x ] |
-| 3 | Validação de Ordenação (In-Order)  | Travessia Em-Ordem sobre 10,000 registos inseridos | Exibição das chaves em ordem estritamente alfabética e cronológica crescente.  | [ x ] |
-| 4 | Re-balanceamento AVL (Rotações)   | Inserção de chaves forçando casos de LL, RR, LR e RL.  | Rotações simples e duplas acionadas; Fator de Balanceamento FB {-1, 0, 1} em todos os nós. | [ x ] |
-| 5 | Divisão de Nó 2-3-4 (Splits)   | Inserção no 4º elemento de um Nó-4 cheio [K1, K2, K3]  | Divisão pré-emptiva (Top-Down Split) executada; chave promovida ao nó pai e folhas no mesmo nível.  | [ x ] |
-| 6 | Remoção de Nó Intermediário   | Exclusão de chave correspondente a um nó com 2 filhos. | Substituição da chave pelo sucessor Em-Ordem; re-balanceamento acionado sem perda de subárvores. | [ x ] |
-| 7 | Persistência em Ficheiro (Reboot Test)   | Serialização do índice em Pré-Ordem para disco, encerramento do processo e recarga.  | Reconstrução da árvore em RAM mantendo a mesma geometria e altura originais | [ x ] |
+| 1 | Carga Massiva CSV | Inserção das primeiras 40 linhas do arquivo INFLUD19-23-03-2026.csv. | Ambas as árvores criadas em memória com sucesso. A AVL deve aplicar rotações e a 2-3-4 deve agrupar nós, mantendo a estrutura balanceada. | [ x ] |
+| 2 | Exibição Tabular | Percorrer as árvores utilizando o método Em-Ordem (*In-Order*). | Exibição no console de uma tabela perfeitamente alinhada, com os pacientes ordenados de forma estritamente crescente pelo ID. | [ x ] |
+| 3 | Forçar Desbalanceamento | Inserção de IDs simulados em ordem estritamente crescente. | A AVL deve acionar rotações imediatas. A 2-3-4 deve realizar o *split* preventivo da raiz, absorvendo as inserções sem perder a velocidade. | [ x ] |
 
 ### 3.3 Casos Extremos (Edge Cases)
-
-Árvore Vazia: Executar pesquisa ou remoção numa árvore cuja raiz é NULL. O sistema deve retornar NULL ou mensagem informativa sem gerar falha de segmentação (Segmentation Fault).
-
-  Único Elemento: Inserir 1 registo e eliminá-lo em seguida. A raiz deve voltar ao estado NULL e a memória ser libertada corretamente.
-
-  Chaves Duplicadas (Notificações Repetidas): Tentar inserir duas vezes a mesma chave de notificação. O algoritmo deve atualizar o offset existente em vez de criar um nó duplicado.
-
-  Dados em Ordem Cronológica Crescente (Pior Caso de Inserção): Inserção de 48,941 registos ordenados por DT_NOTIFIC.
-Resultado na AVL: Rotações contínuas mantêm a altura limitada a 22 níveis.
-
-Resultado na 2-3-4: Divisões preemptivas mantêm todas as folhas estritamente no mesmo nível (altura aproximada de 8 a 9 níveis).
-
-Volume Máximo do Dataset (N = 48,941): Verificação de alocação de memória sob carga real.
-
-Libertação Total de Memória: Destruição completa da árvore via free_tree(). O analisador Valgrind deve reportar 0 bytes lost in 0 blocks.
-
-
+-   **Dados Mal Formatados/Vazios no CSV:** A função `pegar_coluna_por_indice` foi desenvolvida para avançar sobre aspas (`"`) indesejadas e pular IDs nulos ou iguais a zero.
+-   **Limites de Console Windows:** Criação de rotinas de cabeçalho dinâmico (a cada 40 linhas) para evitar o desaparecimento dos títulos das colunas após *scrolling* agressivo, e controle estrito do tamanho das *strings* para evitar quebras visuais.
+-   **Crescimento da Árvore 2-3-4:** Ao contrário da AVL que cresce para baixo, validou-se que as folhas da 2-3-4 mantêm a profundidade constante, promovendo a chave intermediária ao pai em caso de colisão, dividindo o nó.
 
 ### 3.4 Testes de Desempenho *(Para Entrega 2)*
 Descreva como o grupo mediu o tempo de execução e o uso de memória em diferentes tamanhos de amostragem (ex.: 100, 1.000, 10.000 e 100.000 registros).
@@ -123,7 +102,9 @@ Resuma os resultados (tabelas, gráficos ou links para arquivos em `/resultados`
 ## 4. Como Executar
 
 ### 4.1 Pré-requisitos *(Para Entrega 2)*
-Linguagem, versão e dependências necessárias.
+-   Linguagem C
+-   Compilador C (GCC / MinGW)
+-   Ambiente sugerido: Code::Blocks ou VSCode
 
 ### 4.2 Instruções de Execução *(Para Entrega 2)*
 
@@ -136,5 +117,8 @@ README.md
 ---
 
 ## 5. Referências
+- Portal de Dados Abertos do Ministério da Saúde. Disponível em: https://dadosabertos.saude.gov.br/.
+- Documentação do SIVEP-Gripe (Ministério da Saúde - Brasil).
+- Material Didático - Disciplina Estruturas de Dados II, UNICID.
 
 Bibliografia, artigos ou materiais consultados.
