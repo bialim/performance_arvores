@@ -72,7 +72,7 @@ Tabela com a complexidade assintótica (Big-O) teórica de cada operação imple
 Dataset de Ensaio: `INFLUD19-23-03-2026.csv` (N = 48.942 registros).
 
 ### 3.1 Objetivo dos Testes
-Ambiente de Execução: Linux x86_64 / Windows 11 x86_64, Compilador GCC.
+Ambientes de Execução: Linux x86_64 / Windows 11 x86_64, Compilador GCC.
 
 O grupo pretende validar empiricamente a integridade estrutural e comparar o desempenho (tempo e memória) das implementações em C da Árvore AVL e da Árvore 2-3-4 sobre o dataset SRAG. Os testes visam:
 -   **Validar Inserções Complexas:** Garantir o correto armazenamento, extração segura do CSV (tratando delimitadores) e alinhamento dos atributos clínicos na `struct`.
@@ -85,6 +85,8 @@ O grupo pretende validar empiricamente a integridade estrutural e comparar o des
 | 1 | Carga Massiva CSV | Inserção das primeiras 40 linhas do arquivo INFLUD19-23-03-2026.csv. | Ambas as árvores criadas em memória com sucesso. A AVL deve aplicar rotações e a 2-3-4 deve agrupar nós, mantendo a estrutura balanceada. | [ x ] |
 | 2 | Exibição Tabular | Percorrer as árvores utilizando o método Em-Ordem (*In-Order*). | Exibição no console de uma tabela perfeitamente alinhada, com os pacientes ordenados de forma estritamente crescente pelo ID. | [ x ] |
 | 3 | Forçar Desbalanceamento | Inserção de IDs simulados em ordem estritamente crescente. | A AVL deve acionar rotações imediatas. A 2-3-4 deve realizar o *split* preventivo da raiz, absorvendo as inserções sem perder a velocidade. | [ x ] |
+| 4 | Performance de Integridade | Compilação da árvore 50 vezes consecutivas após inicializar a máquina. | Ambas as árvores devem simular um tempo rápido e coeso de execução. | [ x ] |
+
 
 ### 3.3 Casos Extremos (Edge Cases)
 -   **Dados Mal Formatados/Vazios no CSV:** A função `pegar_coluna_por_indice` foi desenvolvida para avançar sobre aspas (`"`) indesejadas e pular IDs nulos ou iguais a zero.
@@ -120,5 +122,3 @@ README.md
 - Portal de Dados Abertos do Ministério da Saúde. Disponível em: https://dadosabertos.saude.gov.br/.
 - Documentação do SIVEP-Gripe (Ministério da Saúde - Brasil).
 - Material Didático - Disciplina Estruturas de Dados II, UNICID.
-
-Bibliografia, artigos ou materiais consultados.
