@@ -85,7 +85,7 @@ O grupo pretende validar empiricamente a integridade estrutural e comparar o des
 | 1 | Carga Massiva CSV | Inserção das primeiras 40 linhas do arquivo INFLUD19-23-03-2026.csv. | Ambas as árvores criadas em memória com sucesso. A AVL deve aplicar rotações e a 2-3-4 deve agrupar nós, mantendo a estrutura balanceada. | [ x ] |
 | 2 | Exibição Tabular | Percorrer as árvores utilizando o método Em-Ordem (*In-Order*). | Exibição no console de uma tabela perfeitamente alinhada, com os pacientes ordenados de forma estritamente crescente pelo ID. | [ x ] |
 | 3 | Forçar Desbalanceamento | Inserção de IDs simulados em ordem estritamente crescente. | A AVL deve acionar rotações imediatas. A 2-3-4 deve realizar o *split* preventivo da raiz, absorvendo as inserções sem perder a velocidade. | [ x ] |
-| 4 | Performance de Integridade | Compilação da árvore 50 vezes consecutivas após inicializar a máquina. | Ambas as árvores devem simular um tempo rápido e coeso de execução. | [ x ] |
+| 4 | Performance de Integridade | Compilação da árvore 50 vezes consecutivas após inicializar a máquina. | A compilação de ambas as árvores deve registrar um tempo de processamento minimizado, com variação quase nula entre as 50 iterações. | [ x ] |
 
 
 ### 3.3 Casos Extremos (Edge Cases)
