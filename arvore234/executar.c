@@ -1,4 +1,5 @@
 #include "arvore234.h"
+#include "arvore234.c"
 #include <locale.h>
 
 // Imprime na consola o menu principal com as opcoes disponiveis para o usuario.
