@@ -50,11 +50,11 @@ Foram implementadas e serão comparadas duas estruturas de busca auto-balanceáv
 -   **Árvore 2-3-4:** Foi escolhida como contraponto à AVL, pois introduz o conceito de nós com múltiplos itens e filhos. Ao agrupar até 3 pacientes no mesmo nó e crescer "para cima" através de *splits* preemptivos (sem usar rotações), ela gera árvores muito mais achatadas. É excelente para comparar o desempenho de alocação de memória RAM contra simulações de acesso a disco (base teórica das B-Trees usadas em SGBDs reais).
 
 ### 2.3 Operações Implementadas *(Para Entrega 2)*
-- [ ] Inserção
-- [ ] Remoção
-- [ ] Busca
-- [ ] Percursos (Pré-ordem, Em ordem, Pós-ordem)
-- [ ] Balanceamento *(se aplicável)*
+- [x] Inserção
+- [x] Remoção
+- [x] Busca
+- [x] Percursos (Pré-ordem, Em ordem, Pós-ordem)
+- [x] Balanceamento *(se aplicável)*
 - [ ] Outra: `______`
 
 ### 2.4 Complexidade
@@ -94,7 +94,8 @@ O grupo pretende validar empiricamente a integridade estrutural e comparar o des
 -   **Crescimento da Árvore 2-3-4:** Ao contrário da AVL que cresce para baixo, validou-se que as folhas da 2-3-4 mantêm a profundidade constante, promovendo a chave intermediária ao pai em caso de colisão, dividindo o nó.
 
 ### 3.4 Testes de Desempenho *(Para Entrega 2)*
-Descreva como o grupo mediu o tempo de execução e o uso de memória em diferentes tamanhos de amostragem (ex.: 100, 1.000, 10.000 e 100.000 registros).
+Utilizado o cenário "Carga massiva", que usa 40 linhas. Mede com tamanhos crescentes — ex.: 1 mil, 10 mil, 25 mil e os 48.942 registros — para traçar tempo × tamanho nas duas árvores e comparar com O(log n). Esse teste é feito com o computador recém ligado e sem outros sistemas ligados junto com a execução do programa.
+Também foi feito um teste para dizer o que acontece se o mesmo id aparecer duas vezes (rejeitar ou atualizar) e testar isso nas duas árvores.
 
 ### 3.5 Resultados Obtidos *(Para Entrega 2)*
 Resuma os resultados (tabelas, gráficos ou links para arquivos em `/resultados`) e compare-os com a complexidade assintótica teórica esperada.
