@@ -22,19 +22,17 @@ Entrega 1 de trabalho da disciplina Estruturas de Dados II — UNICID Prof. Cid 
 O conjunto de dados utilizado consiste em casos de Síndrome Respiratória Aguda Grave (SRAG) no Brasil (2019-2026), extraídos da base oficial SIVEP-Gripe do Ministério da Saúde. O arquivo encontra-se no formato CSV e contém quase 50 mil registros de pacientes. A planilha completa engloba informações sobre os pacientes e desfechos clínicos.
 
 ### 1.2 Fonte
-Ministério da Saúde - Base de Dados SIVEP-Gripe (INFLUD19), obtida através de planilha disponibilizada no portal de **Dados Abertos do Ministério da Saúde** (https://dadosabertos.saude.gov.br/). O conjunto de dados é o "Banco de dados da Síndrome Respiratória Aguda Grave (SRAG) - 2019 a 2026", o arquivo específico utilizado neste projeto é o `INFLUD19-23-03-2026.csv`.
+Ministério da Saúde - Base de Dados SIVEP-Gripe (INFLUD19), obtida através de planilha disponibilizada no portal de **Dados Abertos do Ministério da Saúde** (https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026). O conjunto de dados é o "Banco de dados da Síndrome Respiratória Aguda Grave (SRAG) - 2019 a 2026", o arquivo específico utilizado neste projeto é o `INFLUD19-23-03-2026.csv`.
 
 ### 1.3 Estrutura dos Dados
 Descreva os campos/atributos relevantes que serão usados como chave de inserção, busca e comparação nas árvores:
-- `id` *(long long)*: Chave principal, identificador único do paciente.
 - `data_registro` *(string)*: Data de registro da notificação.
 - `cidade_estado` *(string)*: Município e Unidade Federativa combinados.
-- `sexo` *(string)*: Sexo do paciente.
 - `data_nascimento` *(string)*: Data de nascimento.
 - `desfecho` *(string)*: Evolução do caso (Cura, Óbito, etc.) com a data respectiva.
 
 ### 1.4 Justificativa da Escolha
-O DATASET SRAG/SIVEP-Gripe é adequado para testar estruturas de dados complexas, devido ao volume considerável de registros (quase 50 mil) e à utilização de identificadores (IDs) na forma de números inteiros longos. A necessidade de ordenar rapidamente esses IDs longos e associá-los a informações clínicas complexas simula perfeitamente o ambiente de um banco de dados real da área da saúde, exigindo alta performance tanto na inserção quanto na busca.
+O DATASET SRAG/SIVEP-Gripe é adequado para testar estruturas de dados complexas, devido ao volume considerável de registros (quase 50 mil) e à utilização de identificadores (data de registro e cidade-estado) na forma de números inteiros longos. A necessidade de ordenar rapidamente esses IDs longos e associá-los a informações clínicas complexas simula perfeitamente o ambiente de um banco de dados real da área da saúde, exigindo alta performance tanto na inserção quanto na busca.
 
 ---
 
@@ -111,15 +109,15 @@ Resuma os resultados (tabelas, gráficos ou links para arquivos em `/resultados`
 
 ### 4.2 Instruções de Execução *(Para Entrega 2)*
 
-/src         → código-fonte
-/dataset     → dataset utilizado
-/testes      → scripts e casos de teste
-/resultados  → saídas e relatórios de desempenho
+/src         → código-fonte /br
+/dataset     → dataset utilizado /br
+/testes      → scripts e casos de teste /br
+/resultados  → saídas e relatórios de desempenho /br
 README.md
 
 ---
 
 ## 5. Referências
-- Portal de Dados Abertos do Ministério da Saúde. Disponível em: https://dadosabertos.saude.gov.br/.
+- Portal de Dados Abertos do Ministério da Saúde. Disponível em: https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026. /br
 - Documentação do SIVEP-Gripe (Ministério da Saúde - Brasil).
 - Material Didático - Disciplina Estruturas de Dados II, UNICID.
