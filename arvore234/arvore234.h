@@ -8,7 +8,6 @@
 
 // Estrutura que armazena os dados relevantes de cada paciente extraidos do CSV.
 typedef struct {
-    long long id;
     char data_registro[15];
     char cidade_estado[80];
     char sexo[5];
