@@ -3,10 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// ============================================================================
-// 1. ESTRUTURAS E LÓGICA DA ÁRVORE AVL
-// ============================================================================
-
+//ESTRUTURAS E LÓGICA DA ÁRVORE AVL
 typedef struct {
     long long id;
     char data_registro[15];
@@ -86,7 +83,7 @@ NoAVL* inserirAVL(NoAVL* no, RegistroPaciente dado) {
     return no;
 }
 
-// --- FUNÇÕES NOVAS ADICIONADAS PARA A INTERFACE ---
+// FUNÇÕES NOVAS ADICIONADAS PARA A INTERFACE
 
 NoAVL* buscarAVL(NoAVL* raiz, long long id) {
     if (raiz == NULL || raiz->dado.id == id) return raiz;
@@ -197,9 +194,8 @@ NoAVL* carregarPlanilhaCSV(const char* nomeArquivo, NoAVL* raiz, int *total_carr
     return raiz;
 }
 
-// ============================================================================
-// 2. INTERFACE GRÁFICA (GTK3)
-// ============================================================================
+
+//INTERFACE GRÁFICA (GTK3)
 
 NoAVL* arvoreRaiz = NULL;
 
@@ -283,7 +279,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
     gtk_container_add(GTK_CONTAINER(window), grid);
 
-    // Labels e Entries
+    // Labels
     l_id = gtk_label_new("ID Paciente:");
     entry_id = gtk_entry_new();
     l_cid = gtk_label_new("Cidade-UF:");
