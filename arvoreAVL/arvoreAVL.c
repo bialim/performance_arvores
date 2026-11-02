@@ -215,7 +215,7 @@ int main() {
     int total_pacientes = 0;
     int contador_linhas = 0;
 
-    // Titulo principal no topo do programa
+    // Titulo principal
     printf("==========================================================================================================\n");
     printf("                         Dados SIVEP-Gripe: Casos de SRAG no Brasil (2019-2026)                           \n");
     printf("==========================================================================================================\n\n");
