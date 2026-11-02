@@ -1,39 +1,43 @@
 #include "arvore234.h"
-#include "arvore234.c"
 #include <locale.h>
 
-// Imprime na consola o menu principal com as opcoes disponiveis para o usuario.
-static void exibirMenu(void) {
-    printf("\n");
-    printf("================================================================\n");
+static void menu(void) {
+    printf("\n================================================================\n");
     printf("        ARVORE 2-3-4  --  SIVEP-Gripe\n");
     printf("================================================================\n");
-    printf("   1. Carregar dados\n");
-    printf("   2. Buscar paciente por ID\n");
-    printf("   3. Remover paciente por ID\n");
-    printf("   4. Imprimir em-ordem (tabela, com limite)\n");
-    printf("   5. Estatisticas da arvore\n");
-    printf("   6. Limpar arvore\n");
-    printf("   0. Sair\n");
+    printf("  1. Definir tamanho maximo a carregar\n");
+    printf("  2. Carregar CSV (respeitando o tamanho definido)\n");
+    printf("  3. Inserir registro manualmente\n");
+    printf("  4. Buscar por chave composta\n");
+    printf("  5. Remover por chave composta\n");
+    printf("  6. Imprimir em-ordem (tabela)\n");
+    printf("  7. Estatisticas e validacao\n");
+    printf("  8. Limpar arvore\n");
+    printf("  0. Sair\n");
     printf("================================================================\n");
     printf("Opcao: ");
 }
 
-// Le um numero inteiro longo (long long) da entrada padrao, repetindo ate o valor ser valido.
-static long long lerLongLong(const char* msg) {
-    long long v;
-    char buf[64];
-    while (1) {
-        printf("%s", msg);
-        if (fgets(buf, sizeof(buf), stdin) && sscanf(buf, "%lld", &v) == 1)
-            return v;
-        printf("  Entrada invalida.\n");
+static void lerChave(Chave234* ch) {
+    char buf[256];
+    printf("  Cidade-UF (ex: SAO PAULO-SP): ");
+    if (fgets(buf, sizeof(buf), stdin)) {
+        buf[strcspn(buf,"\r\n")]='\0';
+        strncpy(ch->cidade_estado, buf, TAM_CIDADE-1);
+        ch->cidade_estado[TAM_CIDADE-1]='\0';
     }
+    printf("  Data registro (ex: 2023-08-20): ");
+    if (fgets(buf, sizeof(buf), stdin)) {
+        buf[strcspn(buf,"\r\n")]='\0';
+        strncpy(ch->data_registro, buf, TAM_DATA-1);
+        ch->data_registro[TAM_DATA-1]='\0';
+    }
+    printf("  ID: ");
+    if (fgets(buf, sizeof(buf), stdin)) ch->id = atoll(buf);
 }
 
-// Aguarda o usuario pressionar ENTER para continuar apos uma operacao.
 static void pausar(void) {
-    printf("\nPressione ENTER para continuar...");
+    printf("\nPressione ENTER...");
     getchar();
 }
 
@@ -41,127 +45,208 @@ static void pausar(void) {
 int main(void) {
     setlocale(LC_ALL, "Portuguese");
 
-    No234* raiz = NULL;
-    long long total_carregado = 0;
-    int opcao;
+    No234*  raiz            = NULL;
+    long long limite_carga  = 0;   /* 0 = carregar tudo */
+    long long carregados    = 0;
+    char     ultimo_csv[256]= "";
 
     printf("================================================================\n");
-    printf("   ARVORE 2-3-4  --  Leitura do SIVEP-Gripe\n");
+    printf("   ARVORE 2-3-4 -- Chave composta (cidade, data, id)\n");
     printf("================================================================\n");
+    printf("Dica: defina o tamanho (opcao 1) antes de carregar.\n");
 
+    int op;
     do {
-        exibirMenu();
-        if (scanf("%d", &opcao) != 1) {
-            int c; while ((c = getchar()) != '\n' && c != EOF);
-            opcao = -1;
+        menu();
+        int leitura_valida = scanf("%d", &op) == 1;
+        int caractere;
+        while ((caractere = getchar()) != '\n' && caractere != EOF) {
+            (void)caractere;
         }
-        int c; while ((c = getchar()) != '\n' && c != EOF);
+        if (!leitura_valida) op = -1;
 
-        switch (opcao) {
+        switch (op) {
 
-        // Opcao 1: le o CSV e constroi a arvore 2-3-4 com os registros do SIVEP-Gripe.
         case 1: {
-            char caminho[256];
-            printf("Nome do arquivo CSV (ex: INFLUD19-23-03-2026.csv): ");
-            if (fgets(caminho, sizeof(caminho), stdin))
-                caminho[strcspn(caminho, "\r\n")] = '\0';
-
-            printf("\nCarregando '%s'...\n", caminho);
-            raiz = carregarPlanilhaCSV234(caminho, raiz, &total_carregado);
-
-            if (total_carregado == 0) {
-                printf("Nenhum registro carregado.\n");
-            } else {
-                printf("\n=== Carga concluida ===\n");
-                printf("  Registros inseridos  : %lld\n", total_carregado);
-                printf("  Nos totais           : %d\n",   contarNos234(raiz));
-                printf("  Chaves totais        : %d\n",   contarChaves234(raiz));
-                printf("  Altura da arvore     : %d\n",   altura234(raiz));
+            printf("Quantos registros carregar? (0 = todos): ");
+            if (scanf("%lld", &limite_carga) != 1 || limite_carga < 0) {
+                limite_carga = 0;
+                printf("  Valor invalido, usando 0 (todos).\n");
             }
+            while (getchar() != '\n');
+            printf("  Tamanho maximo definido: %lld\n", limite_carga);
             pausar();
             break;
         }
 
-        // Opcao 2: busca um paciente pelo ID e imprime seus dados se encontrado.
         case 2: {
-            long long id = lerLongLong("ID a buscar: ");
-            No234* no = buscar234(raiz, id);
+            char arq[256];
+            printf("Nome do CSV (Enter para '%s'): ",
+                   ultimo_csv[0] ? ultimo_csv : "INFLUD19-23-03-2026.csv");
+            if (fgets(arq, sizeof(arq), stdin)) arq[strcspn(arq,"\r\n")]='\0';
+            if (arq[0] == '\0') {
+                if (ultimo_csv[0]) strcpy(arq, ultimo_csv);
+                else strcpy(arq, "INFLUD19-23-03-2026.csv");
+            }
+            strncpy(ultimo_csv, arq, sizeof(ultimo_csv)-1);
 
-            if (no != NULL) {
-                int idx = -1;
-                for (int i = 0; i < no->numChaves; i++)
-                    if (no->chaves[i].id == id) { idx = i; break; }
-                printf("\n  ENCONTRADO:\n");
-                printf("    ID          : %lld\n", no->chaves[idx].id);
-                printf("    Registro    : %s\n",   no->chaves[idx].data_registro);
-                printf("    Nascimento  : %s\n",   no->chaves[idx].data_nascimento);
-                printf("    Cidade/UF   : %s\n",   no->chaves[idx].cidade_estado);
-                printf("    Sexo        : %s\n",   no->chaves[idx].sexo);
-                printf("    Desfecho    : %s\n",   no->chaves[idx].desfecho);
-            } else {
-                printf("\n  NAO encontrado.\n");
+            printf("Carregando '%s' (limite=%lld)...\n",
+                   arq, limite_carga);
+
+            RegistroPaciente* regs = NULL;
+            long long n = lerCSV234(arq, &regs, limite_carga);
+            if (n == 0) {
+                printf("Nenhum registro valido carregado.\n");
+                free(regs);
+                pausar();
+                break;
+            }
+
+            liberarArvore234(raiz);
+            raiz = NULL;
+            resetMetricas234();
+            for (long long i = 0; i < n; i++)
+                inserirNo234(&raiz, regs[i]);
+            carregados = n;
+            free(regs);
+
+            printf("\n=== Carga concluida ===\n");
+            printf("  Registros      : %lld\n", carregados);
+            printf("  Nos            : %d\n",   contarNos234(raiz));
+            printf("  Chaves         : %d\n",   contarChaves234(raiz));
+            printf("  Altura         : %d\n",   altura234(raiz));
+            printf("  Comparacoes    : %lld\n", g_metricas234.comparacoes);
+            printf("  Splits         : %lld\n", g_metricas234.splits);
+            printf("  Insercoes OK   : %lld\n", g_metricas234.insercoes_ok);
+            printf("  Duplicatas     : %lld\n", g_metricas234.insercoes_dup);
+            printf("  Memoria (aprox): %.2f KB\n",
+                   estimarMemoria234(raiz) / 1024.0);
+            pausar();
+            break;
+        }
+
+        case 3: {
+            RegistroPaciente r;
+            memset(&r, 0, sizeof(r));
+            lerChave(&r.chave);
+            printf("  Sexo (M/F): ");
+            if (fgets(r.sexo, sizeof(r.sexo), stdin))
+                r.sexo[strcspn(r.sexo,"\r\n")]='\0';
+            printf("  Nascimento: ");
+            if (fgets(r.data_nascimento, sizeof(r.data_nascimento), stdin))
+                r.data_nascimento[strcspn(r.data_nascimento,"\r\n")]='\0';
+            printf("  Desfecho  : ");
+            if (fgets(r.desfecho, sizeof(r.desfecho), stdin))
+                r.desfecho[strcspn(r.desfecho,"\r\n")]='\0';
+
+            resetMetricas234();
+            if (inserirNo234(&raiz, r))
+                printf("  Inserido. (comp=%lld, splits=%lld)\n",
+                       g_metricas234.comparacoes, g_metricas234.splits);
+            else
+                printf("  Duplicata rejeitada (chave ja existente).\n");
+            pausar();
+            break;
+        }
+
+        case 4: {
+            Chave234 ch;
+            lerChave(&ch);
+            resetMetricas234();
+            No234* no = buscar234(raiz, &ch);
+            printf("  Resultado: %s (comparacoes=%lld)\n",
+                   no ? "ENCONTRADO" : "NAO ENCONTRADO",
+                   g_metricas234.comparacoes);
+            if (!no) {
+                if (raiz == NULL)
+                    printf("  Motivo: a arvore esta vazia; carregue o CSV ou insira um registro.\n");
+                else
+                    printf("  Motivo: a busca exige coincidencia exata de cidade-UF, data de registro e ID.\n");
+            }
+            if (no) {
+                for (int i = 0; i < no->numChaves; i++) {
+                    if (compararChaves(&no->chaves[i].chave, &ch) == 0) {
+                        printf("  Desfecho: %s\n", no->chaves[i].desfecho);
+                        printf("  Sexo    : %s\n", no->chaves[i].sexo);
+                        printf("  Nasc.   : %s\n", no->chaves[i].data_nascimento);
+                        break;
+                    }
+                }
             }
             pausar();
             break;
         }
 
-        // Opcao 3: remove um paciente pelo ID, reequilibrando a arvore.
-        case 3: {
-            long long id = lerLongLong("ID a remover: ");
-            raiz = removerNo234(raiz, id);
-            printf("  Operacao concluida.\n");
-            pausar();
-            break;
-        }
-
-        // Opcao 4: imprime os registros em ordem crescente de ID, em formato de tabela,
-        // respeitando um limite maximo de linhas informado pelo usuario.
-        case 4: {
-            long long limite = lerLongLong("Quantas linhas imprimir? ");
-            long long cont = 0;
-            printf("\n");
-            imprimirEmOrdemTabela234(raiz, &cont, limite);
-            printf("+----------------+--------------+--------------+---------------------------+------+----------------------+\n");
-            printf("Linhas impressas: %lld\n", cont);
-            pausar();
-            break;
-        }
-
-        // Opcao 5: exibe estatisticas da arvore (altura, numero de nos, chaves, media).
         case 5: {
+            Chave234 ch;
+            lerChave(&ch);
+            resetMetricas234();
+            if (removerNo234(&raiz, &ch))
+                printf("  Removido. (comparacoes=%lld)\n",
+                       g_metricas234.comparacoes);
+            else
+                printf("  Chave nao encontrada (arvore inalterada).\n");
+            ResultadoValidacao234 v = validar234(raiz);
+            printf("  Validacao apos remocao: %s\n",
+                   v.ok ? "OK" : v.mensagem);
+            pausar();
+            break;
+        }
+
+        case 6: {
+            long long lim;
+            printf("Limite de linhas (0 = todas): ");
+            if (scanf("%lld", &lim) != 1) lim = 40;
+            while (getchar() != '\n');
+            if (lim <= 0) lim = (long long)1 << 60;
+
+            long long c = 0;
+            printf("\n");
+            imprimirEmOrdemTabela234(raiz, &c, lim);
+            printf("+---------------------+------------+----------------------+----------------+------+----------------------+\n");
+            printf("Linhas impressas: %lld\n", c);
+            pausar();
+            break;
+        }
+
+        case 7: {
             printf("\n=== Estatisticas ===\n");
             printf("  Altura          : %d\n", altura234(raiz));
-            printf("  Nos totais      : %d\n", contarNos234(raiz));
-            printf("  Chaves totais   : %d\n", contarChaves234(raiz));
+            printf("  Nos             : %d\n", contarNos234(raiz));
+            printf("  Chaves          : %d\n", contarChaves234(raiz));
+            printf("  Memoria (aprox) : %.2f KB\n",
+                   estimarMemoria234(raiz) / 1024.0);
             if (contarNos234(raiz) > 0)
                 printf("  Media chaves/no : %.2f\n",
                        (double)contarChaves234(raiz) / contarNos234(raiz));
+            ResultadoValidacao234 v = validar234(raiz);
+            printf("  Validacao       : %s\n",
+                   v.ok ? "OK" : "FALHOU");
+            if (!v.ok) printf("    %s\n", v.mensagem);
+            printf("  Altura das folhas: %d\n", v.alturaFolhas);
             pausar();
             break;
         }
 
-        // Opcao 6: liberta toda a memoria da arvore, deixando-a vazia.
-        case 6:
+        case 8:
             liberarArvore234(raiz);
             raiz = NULL;
-            total_carregado = 0;
-            printf("\n  Arvore liberada.\n");
+            carregados = 0;
+            printf("  Arvore liberada.\n");
             pausar();
             break;
 
-        // Opcao 0: encerra o programa.
         case 0:
-            printf("\nEncerrando...\n");
+            printf("Encerrando...\n");
             break;
 
         default:
-            printf("\n  Opcao invalida.\n");
+            printf("  Opcao invalida.\n");
             pausar();
         }
 
-    } while (opcao != 0);
+    } while (op != 0);
 
-    // Liberta a memoria restante antes de terminar.
     liberarArvore234(raiz);
     return 0;
 }
