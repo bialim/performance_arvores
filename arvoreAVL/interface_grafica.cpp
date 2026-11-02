@@ -13,6 +13,7 @@ typedef struct {
     char desfecho[35];
 } RegistroPaciente;
 
+
 typedef struct NoAVL {
     RegistroPaciente dado;
     int altura;
