@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: gcc arvore234",
+			"command": "/usr/bin/gcc",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"${workspaceFolder}/arvore234/arvore234.c",
+				"${workspaceFolder}/arvore234/executar.c",
+				"-o",
+				"${workspaceFolder}/arvore234/output/executar"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/arvore234"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compilador: /usr/bin/gcc"
+		}
+	]
+}
