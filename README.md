@@ -152,12 +152,12 @@ No teste com 1.000 registros, as duas implementações pesquisaram registros dif
 |---:|---|---|---|---:|---:|
 | 1.000 | AVL | ALTAMIRA-PA, 2019-02-04, 315592350125 | Encontrado | 10 | 0,003416 |
 | 1.000 | 2-3-4 | ALEM PARAIBA-MG, 2019-07-12, 315631909307 | Encontrado | 8 | 0,004583 |
-| 10.000 | AVL | -, 2019-01-11, 315493734059 | Encontrado | 13 | 0,010458 |
-| 10.000 | 2-3-4 | -, 2019-01-11, 315493734059 | Encontrado | 11 | 0,055166 |
-| 25.000 | AVL | -, 2019-01-11, 315493734059 | Encontrado | 15 | 0,133958 |
-| 25.000 | 2-3-4 | -, 2019-01-11, 315493734059 | Encontrado | 12 | 0,024875 |
-| 48.941 | AVL | -, 2019-01-11, 315493734059 | Encontrado | 15 | 0,033958 |
-| 48.941 | 2-3-4 | -, 2019-01-11, 315493734059 | Encontrado | 12 | 0,074666 |
+| 10.000 | AVL | 2019-01-11, 315493734059 | Encontrado | 13 | 0,010458 |
+| 10.000 | 2-3-4 | 2019-01-11, 315493734059 | Encontrado | 11 | 0,055166 |
+| 25.000 | AVL | 2019-01-11, 315493734059 | Encontrado | 15 | 0,133958 |
+| 25.000 | 2-3-4 | 2019-01-11, 315493734059 | Encontrado | 12 | 0,024875 |
+| 48.941 | AVL | 2019-01-11, 315493734059 | Encontrado | 15 | 0,033958 |
+| 48.941 | 2-3-4 | 2019-01-11, 315493734059 | Encontrado | 12 | 0,074666 |
 
 Nos testes de busca com 10.000, 25.000 e 48.941 registros, foi utilizada a mesma chave nas duas árvores. O registro encontrado apresenta data de registro 2019-01-11, ID 315493734059, sexo masculino, nascimento em 2010-09-08 e desfecho Cura (2019-01-21).
 
