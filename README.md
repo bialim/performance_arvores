@@ -22,14 +22,14 @@ Entrega 1 de trabalho da disciplina Estruturas de Dados II — UNICID Prof. Cid 
 O conjunto de dados utilizado consiste em casos de Síndrome Respiratória Aguda Grave (SRAG) no Brasil (2019-2026), extraídos da base oficial SIVEP-Gripe do Ministério da Saúde. O arquivo encontra-se no formato CSV e contém quase 50 mil registros de pacientes. A planilha completa engloba informações sobre os pacientes e desfechos clínicos.
 
 ### 1.2 Fonte
-Ministério da Saúde - Base de Dados SIVEP-Gripe (INFLUD19), obtida através de planilha disponibilizada no portal de **Dados Abertos do Ministério da Saúde** (https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026). O conjunto de dados é o "Banco de dados da Síndrome Respiratória Aguda Grave (SRAG) - 2019 a 2026", o arquivo específico utilizado neste projeto é o `INFLUD19-23-03-2026.csv`.
+Ministério da Saúde - Base de Dados SIVEP-Gripe (INFLUD19), obtida através de planilha disponibilizada no portal de **Dados Abertos do Ministério da Saúde** (https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026/resource/d96d6348-083a-4184-a39a-794b5e8ec337). O conjunto de dados é o "Banco de dados da Síndrome Respiratória Aguda Grave (SRAG) - 2019 a 2026", o arquivo específico utilizado neste projeto é o `INFLUD19-23-03-2026.csv`.
 
 ### 1.3 Estrutura dos Dados
 A chave de busca e ordenação é composta por `cidade_estado`, `data_registro` e `id`, comparados nessa ordem. Os demais dados do paciente são armazenados como informações associadas ao registro:
 - `sexo` *(string)*: Sexo informado no registro.
 - `data_nascimento` *(string)*: Data de nascimento.
-- `desfecho` *(string)*: Evolução do caso.
-- 
+- `desfecho` *(string)*: Evolução do caso com sua data final.
+
 ### 1.4 Justificativa da Escolha
 O DATASET SRAG/SIVEP-Gripe é adequado para testar estruturas de dados complexas, devido ao volume considerável de registros (quase 50 mil) e à utilização de identificadores (data de registro e cidade-estado) na forma de números inteiros longos. A necessidade de ordenar rapidamente esses IDs longos e associá-los a informações clínicas complexas simula perfeitamente o ambiente de um banco de dados real da área da saúde, exigindo alta performance tanto na inserção quanto na busca.
 
@@ -125,6 +125,7 @@ As medições deverão separar o tempo de leitura e interpretação do CSV do te
 
 ### 3.5 Resultados Obtidos *(Para Entrega 2)*
 Foram realizados testes de carga e busca nas duas estruturas com 1.000, 10.000, 25.000 e 48.941 registros válidos. Em todos os testes de carga apresentados, a quantidade de inserções bem-sucedidas correspondeu à quantidade de registros carregados, e não foram registradas duplicatas.
+
 ### 3.5.1 Resultados da árvore AVL
 
 | Registros | Nós | Altura | Comparações na inserção | Rotações | Memória aproximada (KB) | Tempo de carga (ms) |
@@ -167,10 +168,11 @@ Nos testes de busca com 10.000, 25.000 e 48.941 registros, foi utilizada a mesma
 ### 4.1 Pré-requisitos *(Para Entrega 2)*
 -   Linguagem C
 -   Compilador C (GCC / MinGW)
--   Ambiente sugerido: Code::Blocks ou VSCode
+-   Ambiente sugerido: Code::Blocks, VSCode ou CLion
 
 ### 4.2 Instruções de Execução *(Para Entrega 2)*
 
+```text
 projeto/
 ├── arvore234/
 │   ├── arvore234.c
@@ -178,20 +180,19 @@ projeto/
 │   ├── executar.c
 │   ├── INFLUD19-23-03-2026.csv
 │   └── output/
-│
 ├── arvoreAVL/
 │   ├── arvoreAVL.c
 │   ├── arvoreAVL.h
 │   ├── executar.c
 │   ├── INFLUD19-23-03-2026.csv
 │   └── output/
-│
 ├── cronometro.h
 └── README.md
+```
 
 ---
 
 ## 5. Referências
-- Portal de Dados Abertos do Ministério da Saúde. Disponível em: https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026. /br
+- Portal de Dados Abertos do Ministério da Saúde. Disponível em: https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026/resource/d96d6348-083a-4184-a39a-794b5e8ec337.
 - Documentação do SIVEP-Gripe (Ministério da Saúde - Brasil).
 - Material Didático - Disciplina Estruturas de Dados II, UNICID.
