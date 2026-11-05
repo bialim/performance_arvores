@@ -25,12 +25,11 @@ O conjunto de dados utilizado consiste em casos de Síndrome Respiratória Aguda
 Ministério da Saúde - Base de Dados SIVEP-Gripe (INFLUD19), obtida através de planilha disponibilizada no portal de **Dados Abertos do Ministério da Saúde** (https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026). O conjunto de dados é o "Banco de dados da Síndrome Respiratória Aguda Grave (SRAG) - 2019 a 2026", o arquivo específico utilizado neste projeto é o `INFLUD19-23-03-2026.csv`.
 
 ### 1.3 Estrutura dos Dados
-Descreva os campos/atributos relevantes que serão usados como chave de inserção, busca e comparação nas árvores:
-- `data_registro` *(string)*: Data de registro da notificação.
-- `cidade_estado` *(string)*: Município e Unidade Federativa combinados.
+A chave de busca e ordenação é composta por `cidade_estado`, `data_registro` e `id`, comparados nessa ordem. Os demais dados do paciente são armazenados como informações associadas ao registro:
+- `sexo` *(string)*: Sexo informado no registro.
 - `data_nascimento` *(string)*: Data de nascimento.
-- `desfecho` *(string)*: Evolução do caso (Cura, Óbito, etc.) com a data respectiva.
-
+- `desfecho` *(string)*: Evolução do caso.
+- 
 ### 1.4 Justificativa da Escolha
 O DATASET SRAG/SIVEP-Gripe é adequado para testar estruturas de dados complexas, devido ao volume considerável de registros (quase 50 mil) e à utilização de identificadores (data de registro e cidade-estado) na forma de números inteiros longos. A necessidade de ordenar rapidamente esses IDs longos e associá-los a informações clínicas complexas simula perfeitamente o ambiente de um banco de dados real da área da saúde, exigindo alta performance tanto na inserção quanto na busca.
 
@@ -87,16 +86,79 @@ O grupo pretende validar empiricamente a integridade estrutural e comparar o des
 
 
 ### 3.3 Casos Extremos (Edge Cases)
--   **Dados Mal Formatados/Vazios no CSV:** A função `pegar_coluna_por_indice` foi desenvolvida para avançar sobre aspas (`"`) indesejadas e pular IDs nulos ou iguais a zero.
--   **Limites de Console Windows:** Criação de rotinas de cabeçalho dinâmico (a cada 40 linhas) para evitar o desaparecimento dos títulos das colunas após *scrolling* agressivo, e controle estrito do tamanho das *strings* para evitar quebras visuais.
--   **Crescimento da Árvore 2-3-4:** Ao contrário da AVL que cresce para baixo, validou-se que as folhas da 2-3-4 mantêm a profundidade constante, promovendo a chave intermediária ao pai em caso de colisão, dividindo o nó.
+Além dos testes de desempenho, serão verificados casos que podem causar erros de implementação.
+
+**Árvore vazia:** a busca e a remoção de uma chave inexistente devem terminar corretamente, sem acessar ponteiros inválidos.
+
+**Árvore com um único registro:** a busca deve localizar a chave; a remoção deve deixar a árvore vazia.
+
+**Chave duplicada:** a segunda inserção da mesma chave composta deve ser rejeitada nas duas árvores.
+
+**Remoção da raiz:** após a operação, a árvore deve manter sua ordenação e seu balanceamento.
+
+**Remoção de chave inexistente:** a operação deve informar que a chave não foi encontrada, sem modificar a estrutura.
+
+**Remoção completa:** após remover todos os registros, a estrutura deve estar vazia e apta a receber novas chaves.
 
 ### 3.4 Testes de Desempenho *(Para Entrega 2)*
-Utilizado o cenário "Carga massiva", que usa 40 linhas. Mede com tamanhos crescentes — ex.: 1 mil, 10 mil, 25 mil e os 48.942 registros — para traçar tempo × tamanho nas duas árvores e comparar com O(log n). Esse teste é feito com o computador recém ligado e sem outros sistemas ligados junto com a execução do programa.
-Também foi feito um teste para dizer o que acontece se o mesmo id aparecer duas vezes (rejeitar ou atualizar) e testar isso nas duas árvores.
+Os testes serão realizados com conjuntos de tamanhos crescentes, utilizando os mesmos registros e a mesma ordem de entrada para as duas árvores.
+
+Os tamanhos efetivamente testados foram:
+
+- 1.000 registros;
+- 10.000 registros;
+- 25.000 registros;
+- 48.941 registros válidos, correspondentes a todos os registros utilizados do arquivo CSV.
+
+Para cada tamanho, serão medidos separadamente:
+
+- Tempo de inserção de todos os registros.
+- Tempo de busca de um conjunto fixo de chaves existentes e inexistentes.
+- Tempo de remoção de um conjunto fixo de chaves existentes.
+- Altura final da árvore.
+- Quantidade de comparações realizadas.
+- Quantidade de rotações da AVL.
+- Quantidade de splits da árvore 2-3-4.
+- Estimativa de memória ocupada pela estrutura.
+
+As medições deverão separar o tempo de leitura e interpretação do CSV do tempo gasto pelas operações das árvores. Dessa forma, será possível comparar o custo das estruturas sem misturá-lo ao custo de entrada e saída de arquivos.
 
 ### 3.5 Resultados Obtidos *(Para Entrega 2)*
-Resuma os resultados (tabelas, gráficos ou links para arquivos em `/resultados`) e compare-os com a complexidade assintótica teórica esperada.
+Foram realizados testes de carga e busca nas duas estruturas com 1.000, 10.000, 25.000 e 48.941 registros válidos. Em todos os testes de carga apresentados, a quantidade de inserções bem-sucedidas correspondeu à quantidade de registros carregados, e não foram registradas duplicatas.
+### 3.5.1 Resultados da árvore AVL
+
+| Registros | Nós | Altura | Comparações na inserção | Rotações | Memória aproximada (KB) | Tempo de carga (ms) |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1.000 | 1.000 | 12 | 8.761 | 717 | 213,34 | 16,694000 |
+| 10.000 | 10.000 | 16 | 120.954 | 7.144 | 2.097,16 | 74,085958 |
+| 25.000 | 25.000 | 18 | 335.897 | 17.616 | 5.458,84 | 202,203958 |
+| 48.941 | 48.941 | 19 | 706.174 | 34.341 | 10.710,82 | 371,657916 |
+
+### 3.5.2 Resultados da árvore 2-3-4
+
+| Registros | Nós | Chaves | Altura | Comparações na inserção | Splits | Memória aproximada (KB) | Tempo de carga (ms) |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1.000 | 577 | 1.000 | 8 | 8.893 | 569 | 333,59 | 10,047916 |
+| 10.000 | 5.731 | 10.000 | 11 | 122.959 | 5.720 | 3.278,18 | 118,014166 |
+| 25.000 | 14.248 | 25.000 | 12 | 341.557 | 14.236 | 8.367,91 | 207,817708 |
+| 48.941 | 27.927 | 48.941 | 13 | 717.766 | 27.914 | 16.424,62 | 353,742375 |
+
+### 3.5.3 Resultados das buscas
+
+No teste com 1.000 registros, as duas implementações pesquisaram registros diferentes. Por isso, esse caso é apresentado separadamente e não deve ser considerado uma comparação direta.
+
+| Registros | Estrutura | Chave pesquisada (cidade/UF, data, ID) | Resultado | Comparações | Tempo (ms) |
+|---:|---|---|---|---:|---:|
+| 1.000 | AVL | ALTAMIRA-PA, 2019-02-04, 315592350125 | Encontrado | 10 | 0,003416 |
+| 1.000 | 2-3-4 | ALEM PARAIBA-MG, 2019-07-12, 315631909307 | Encontrado | 8 | 0,004583 |
+| 10.000 | AVL | -, 2019-01-11, 315493734059 | Encontrado | 13 | 0,010458 |
+| 10.000 | 2-3-4 | -, 2019-01-11, 315493734059 | Encontrado | 11 | 0,055166 |
+| 25.000 | AVL | -, 2019-01-11, 315493734059 | Encontrado | 15 | 0,133958 |
+| 25.000 | 2-3-4 | -, 2019-01-11, 315493734059 | Encontrado | 12 | 0,024875 |
+| 48.941 | AVL | -, 2019-01-11, 315493734059 | Encontrado | 15 | 0,033958 |
+| 48.941 | 2-3-4 | -, 2019-01-11, 315493734059 | Encontrado | 12 | 0,074666 |
+
+Nos testes de busca com 10.000, 25.000 e 48.941 registros, foi utilizada a mesma chave nas duas árvores. O registro encontrado apresenta data de registro 2019-01-11, ID 315493734059, sexo masculino, nascimento em 2010-09-08 e desfecho Cura (2019-01-21).
 
 ---
 
@@ -109,11 +171,23 @@ Resuma os resultados (tabelas, gráficos ou links para arquivos em `/resultados`
 
 ### 4.2 Instruções de Execução *(Para Entrega 2)*
 
-/src         → código-fonte /br
-/dataset     → dataset utilizado /br
-/testes      → scripts e casos de teste /br
-/resultados  → saídas e relatórios de desempenho /br
-README.md
+projeto/
+├── arvore234/
+│   ├── arvore234.c
+│   ├── arvore234.h
+│   ├── executar.c
+│   ├── INFLUD19-23-03-2026.csv
+│   └── output/
+│
+├── arvoreAVL/
+│   ├── arvoreAVL.c
+│   ├── arvoreAVL.h
+│   ├── executar.c
+│   ├── INFLUD19-23-03-2026.csv
+│   └── output/
+│
+├── cronometro.h
+└── README.md
 
 ---
 
