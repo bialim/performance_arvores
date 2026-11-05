@@ -33,9 +33,12 @@ typedef struct {
 #define MAX_CHAVES 3
 #define MAX_FILHOS 4
 
+typedef struct IndiceIds234 IndiceIds234;
+
 typedef struct No234 {
     RegistroPaciente chaves[MAX_CHAVES];
     struct No234*    filhos[MAX_FILHOS];
+    IndiceIds234*    indiceIds;
     int numChaves;
     int numFilhos;
     bool folha;
@@ -86,7 +89,8 @@ ResultadoValidacao234 validar234(No234* r);
 /*==============================================================
  *  LEITURA DO CSV
  *==============================================================*/
-void pegar_coluna_por_indice(const char* linha, int coluna, char* resultado);
+void pegar_coluna_por_indice(const char* linha, int coluna, char* resultado,
+                             size_t capacidade);
 
 /* Lê o CSV e preenche um vetor dinâmico. Se limite > 0, para após
  * `limite` registros válidos; se limite <= 0, lê todos. */

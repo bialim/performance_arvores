@@ -1,7 +1,136 @@
 #include "arvore234.h"
+#include <stdint.h>
 
 Metricas234 g_metricas234 = {0,0,0,0};
 void resetMetricas234(void) { g_metricas234 = (Metricas234){0,0,0,0}; }
+
+struct IndiceIds234 {
+    long long* ids;
+    unsigned char* estados;
+    size_t capacidade;
+    size_t quantidade;
+    size_t ocupados;
+};
+
+static size_t hashId234(long long id) {
+    uint64_t valor = (uint64_t)id + UINT64_C(0x9e3779b97f4a7c15);
+    valor = (valor ^ (valor >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+    valor = (valor ^ (valor >> 27)) * UINT64_C(0x94d049bb133111eb);
+    valor ^= valor >> 31;
+    return (size_t)valor;
+}
+
+static IndiceIds234* novoIndiceIds234(size_t capacidade) {
+    IndiceIds234* indice = malloc(sizeof(*indice));
+    if (indice == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
+    indice->ids = calloc(capacidade, sizeof(*indice->ids));
+    indice->estados = calloc(capacidade, sizeof(*indice->estados));
+    if (indice->ids == NULL || indice->estados == NULL) {
+        perror("calloc");
+        free(indice->ids);
+        free(indice->estados);
+        free(indice);
+        exit(EXIT_FAILURE);
+    }
+    indice->capacidade = capacidade;
+    indice->quantidade = 0;
+    indice->ocupados = 0;
+    return indice;
+}
+
+static bool contemId234(const IndiceIds234* indice, long long id) {
+    size_t posicao = hashId234(id) & (indice->capacidade - 1);
+    for (size_t i = 0; i < indice->capacidade; i++) {
+        if (indice->estados[posicao] == 0) return false;
+        if (indice->estados[posicao] == 1 && indice->ids[posicao] == id) return true;
+        posicao = (posicao + 1) & (indice->capacidade - 1);
+    }
+    return false;
+}
+
+static void redimensionarIndiceIds234(IndiceIds234* indice) {
+    IndiceIds234 novo = {0};
+    novo.capacidade = indice->capacidade * 2;
+    novo.ids = calloc(novo.capacidade, sizeof(*novo.ids));
+    novo.estados = calloc(novo.capacidade, sizeof(*novo.estados));
+    if (novo.ids == NULL || novo.estados == NULL) {
+        perror("calloc");
+        free(novo.ids);
+        free(novo.estados);
+        exit(EXIT_FAILURE);
+    }
+    for (size_t i = 0; i < indice->capacidade; i++) {
+        if (indice->estados[i] != 1) continue;
+        size_t posicao = hashId234(indice->ids[i]) & (novo.capacidade - 1);
+        while (novo.estados[posicao] == 1)
+            posicao = (posicao + 1) & (novo.capacidade - 1);
+        novo.ids[posicao] = indice->ids[i];
+        novo.estados[posicao] = 1;
+        novo.quantidade++;
+        novo.ocupados++;
+    }
+    free(indice->ids);
+    free(indice->estados);
+    indice->ids = novo.ids;
+    indice->estados = novo.estados;
+    indice->capacidade = novo.capacidade;
+    indice->quantidade = novo.quantidade;
+    indice->ocupados = novo.ocupados;
+}
+
+static bool inserirId234(IndiceIds234* indice, long long id) {
+    if (contemId234(indice, id)) return false;
+    if ((indice->ocupados + 1) * 10 >= indice->capacidade * 7)
+        redimensionarIndiceIds234(indice);
+
+    size_t posicao = hashId234(id) & (indice->capacidade - 1);
+    size_t removido = SIZE_MAX;
+    while (indice->estados[posicao] != 0) {
+        if (indice->estados[posicao] == 2 && removido == SIZE_MAX)
+            removido = posicao;
+        posicao = (posicao + 1) & (indice->capacidade - 1);
+    }
+    if (removido != SIZE_MAX) posicao = removido;
+    else indice->ocupados++;
+    indice->ids[posicao] = id;
+    indice->estados[posicao] = 1;
+    indice->quantidade++;
+    return true;
+}
+
+static void removerId234(IndiceIds234* indice, long long id) {
+    size_t posicao = hashId234(id) & (indice->capacidade - 1);
+    for (size_t i = 0; i < indice->capacidade; i++) {
+        if (indice->estados[posicao] == 0) return;
+        if (indice->estados[posicao] == 1 && indice->ids[posicao] == id) {
+            indice->estados[posicao] = 2;
+            indice->quantidade--;
+            return;
+        }
+        posicao = (posicao + 1) & (indice->capacidade - 1);
+    }
+}
+
+static void liberarIndiceIds234(IndiceIds234* indice) {
+    if (indice == NULL) return;
+    free(indice->ids);
+    free(indice->estados);
+    free(indice);
+}
+
+static void indexarNos234(No234* no, IndiceIds234* indice) {
+    if (no == NULL) return;
+    for (int i = 0; i < no->numChaves; i++) inserirId234(indice, no->chaves[i].chave.id);
+    if (!no->folha)
+        for (int i = 0; i < no->numFilhos; i++) indexarNos234(no->filhos[i], indice);
+}
+
+static void garantirIndiceIds234(No234* raiz) {
+    if (raiz == NULL || raiz->indiceIds != NULL) return;
+    IndiceIds234* indice = novoIndiceIds234(16);
+    indexarNos234(raiz, indice);
+    raiz->indiceIds = indice;
+}
 
 /*==============================================================
  *  COMPARAÇÃO LEXICOGRÁFICA
@@ -25,12 +154,14 @@ No234* novoNo234(bool folha) {
     n->numChaves = 0;
     n->numFilhos = 0;
     n->folha     = folha;
+    n->indiceIds = NULL;
     for (int i = 0; i < MAX_FILHOS; i++) n->filhos[i] = NULL;
     return n;
 }
 
 void liberarArvore234(No234* r) {
     if (r == NULL) return;
+    liberarIndiceIds234(r->indiceIds);
     if (!r->folha)
         for (int i = 0; i < r->numFilhos; i++)
             liberarArvore234(r->filhos[i]);
@@ -126,20 +257,32 @@ static int inserirRec234(No234* no, RegistroPaciente dado) {
 bool inserirNo234(No234** raizRef, RegistroPaciente dado) {
     if (*raizRef == NULL) {
         *raizRef = novoNo234(true);
+        (*raizRef)->indiceIds = novoIndiceIds234(16);
+        inserirId234((*raizRef)->indiceIds, dado.chave.id);
         (*raizRef)->chaves[0] = dado;
         (*raizRef)->numChaves = 1;
         g_metricas234.insercoes_ok++;
         return true;
     }
+    garantirIndiceIds234(*raizRef);
+    if (contemId234((*raizRef)->indiceIds, dado.chave.id)) {
+        g_metricas234.insercoes_dup++;
+        return false;
+    }
     if ((*raizRef)->numChaves == MAX_CHAVES) {
         No234* novaRaiz = novoNo234(false);
+        novaRaiz->indiceIds = (*raizRef)->indiceIds;
+        (*raizRef)->indiceIds = NULL;
         novaRaiz->filhos[0] = *raizRef;
         novaRaiz->numFilhos = 1;
         dividirFilho234(novaRaiz, 0);
         *raizRef = novaRaiz;
     }
     int ok = inserirRec234(*raizRef, dado);
-    if (ok) g_metricas234.insercoes_ok++;
+    if (ok) {
+        inserirId234((*raizRef)->indiceIds, dado.chave.id);
+        g_metricas234.insercoes_ok++;
+    }
     else    g_metricas234.insercoes_dup++;
     return ok != 0;
 }
@@ -282,11 +425,19 @@ static void removerRec234(No234* no, const Chave234* chave) {
 
 bool removerNo234(No234** raizRef, const Chave234* chave) {
     if (*raizRef == NULL) return false;
+    garantirIndiceIds234(*raizRef);
     if (buscar234(*raizRef, chave) == NULL) return false;
     removerRec234(*raizRef, chave);
+    removerId234((*raizRef)->indiceIds, chave->id);
     if ((*raizRef)->numChaves == 0) {
         No234* antiga = *raizRef;
-        *raizRef = (*raizRef)->folha ? NULL : (*raizRef)->filhos[0];
+        No234* novaRaiz = antiga->folha ? NULL : antiga->filhos[0];
+        if (novaRaiz != NULL) {
+            novaRaiz->indiceIds = antiga->indiceIds;
+            antiga->indiceIds = NULL;
+        }
+        *raizRef = novaRaiz;
+        liberarIndiceIds234(antiga->indiceIds);
         free(antiga);
     }
     return true;
@@ -345,6 +496,9 @@ int contarChaves234(No234* r) {
 size_t estimarMemoria234(No234* r) {
     if (r == NULL) return 0;
     size_t t = sizeof(No234);
+    if (r->indiceIds != NULL)
+        t += sizeof(*r->indiceIds) + r->indiceIds->capacidade *
+             (sizeof(*r->indiceIds->ids) + sizeof(*r->indiceIds->estados));
     if (!r->folha)
         for (int i = 0; i < r->numFilhos; i++)
             t += estimarMemoria234(r->filhos[i]);
@@ -443,14 +597,17 @@ ResultadoValidacao234 validar234(No234* r) {
 /*==============================================================
  *  CSV
  *==============================================================*/
-void pegar_coluna_por_indice(const char* linha, int coluna, char* resultado) {
+void pegar_coluna_por_indice(const char* linha, int coluna, char* resultado,
+                             size_t capacidade) {
     int col_atual = 0, i = 0, j = 0;
+    if (capacidade == 0) return;
     resultado[0] = '\0';
     while (linha[i] != '\0' && linha[i] != '\n' && linha[i] != '\r') {
         if (col_atual == coluna) {
             while (linha[i] != ';' && linha[i] != '\0' &&
                    linha[i] != '\n' && linha[i] != '\r') {
-                if (linha[i] != '"') resultado[j++] = linha[i];
+                if (linha[i] != '"' && (size_t)j + 1 < capacidade)
+                    resultado[j++] = linha[i];
                 i++;
             }
             resultado[j] = '\0';
@@ -492,26 +649,28 @@ long long lerCSV234(const char* nomeArquivo, RegistroPaciente** registros,
         RegistroPaciente reg;
         memset(&reg, 0, sizeof(reg));
 
-        pegar_coluna_por_indice(linha, 0, buf);
+        pegar_coluna_por_indice(linha, 0, buf, sizeof(buf));
         reg.chave.id = atoll(buf);
-        pegar_coluna_por_indice(linha, 5, estado);
-        pegar_coluna_por_indice(linha, 8, cidade);
+        pegar_coluna_por_indice(linha, 5, estado, sizeof(estado));
+        pegar_coluna_por_indice(linha, 8, cidade, sizeof(cidade));
         snprintf(reg.chave.cidade_estado, TAM_CIDADE, "%s-%s", cidade, estado);
-        pegar_coluna_por_indice(linha, 1, reg.chave.data_registro);
+        pegar_coluna_por_indice(linha, 1, reg.chave.data_registro,
+                    sizeof(reg.chave.data_registro));
         char* T = strchr(reg.chave.data_registro, 'T');
         if (T) *T = '\0';
-        pegar_coluna_por_indice(linha, 10, reg.sexo);
-        pegar_coluna_por_indice(linha, 11, reg.data_nascimento);
+        pegar_coluna_por_indice(linha, 10, reg.sexo, sizeof(reg.sexo));
+        pegar_coluna_por_indice(linha, 11, reg.data_nascimento,
+                    sizeof(reg.data_nascimento));
         T = strchr(reg.data_nascimento, 'T');
         if (T) *T = '\0';
 
         char evo[10], evo_txt[30], data_evo[25];
-        pegar_coluna_por_indice(linha, 110, evo);
+        pegar_coluna_por_indice(linha, 110, evo, sizeof(evo));
         if      (!strcmp(evo,"1") || !strcmp(evo,"1.0")) strcpy(evo_txt,"Cura");
         else if (!strcmp(evo,"2") || !strcmp(evo,"2.0")) strcpy(evo_txt,"Obito");
         else if (!strcmp(evo,"3") || !strcmp(evo,"3.0")) strcpy(evo_txt,"Outras causas");
         else strcpy(evo_txt,"Desconhecido");
-        pegar_coluna_por_indice(linha, 111, data_evo);
+        pegar_coluna_por_indice(linha, 111, data_evo, sizeof(data_evo));
         T = strchr(data_evo, 'T'); if (T) *T = '\0';
         if (strlen(data_evo) > 0)
             snprintf(reg.desfecho, sizeof(reg.desfecho), "%s (%s)", evo_txt, data_evo);

@@ -21,6 +21,40 @@
 			],
 			"group": "build",
 			"detail": "compilador: /usr/bin/gcc"
+		},
+		{
+			"type": "cppbuild",
+			"label": "C/C++: gcc arvoreAVL",
+			"command": "/usr/bin/gcc",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"${workspaceFolder}/arvoreAVL/arvoreAVL.c",
+				"${workspaceFolder}/arvoreAVL/executar.c",
+				"-o",
+				"${workspaceFolder}/arvoreAVL/output/executar"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/arvoreAVL"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compilador: /usr/bin/gcc"
+		},
+		{
+			"type": "shell",
+			"label": "Executar arvoreAVL",
+			"command": "gcc -Wall -Wextra -g3 arvoreAVL.c executar.c -o output/executar && ./output/executar",
+			"options": {
+				"cwd": "${workspaceFolder}/arvoreAVL"
+			},
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
 		}
 	]
 }
