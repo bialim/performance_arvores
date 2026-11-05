@@ -69,7 +69,7 @@ Tabela com a complexidade assintótica (Big-O) teórica de cada operação imple
 Dataset de Ensaio: `INFLUD19-23-03-2026.csv` (N = 48.942 registros).
 
 ### 3.1 Objetivo dos Testes
-Ambientes de Execução: Linux x86_64 / Windows 11 x86_64, Compilador GCC.
+Ambientes de Execução: Mac Silicon
 
 O grupo pretende validar empiricamente a integridade estrutural e comparar o desempenho (tempo e memória) das implementações em C da Árvore AVL e da Árvore 2-3-4 sobre o dataset SRAG. Os testes visam:
 -   **Validar Inserções Complexas:** Garantir o correto armazenamento, extração segura do CSV (tratando delimitadores) e alinhamento dos atributos clínicos na `struct`.
