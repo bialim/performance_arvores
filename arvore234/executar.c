@@ -1,3 +1,4 @@
+#include "../cronometro.h"
 #include "arvore234.h"
 #include <locale.h>
 
@@ -13,6 +14,7 @@ static void menu(void) {
     printf("  6. Imprimir em-ordem (tabela)\n");
     printf("  7. Estatisticas e validacao\n");
     printf("  8. Limpar arvore\n");
+    printf("  9. Imprimir raiz\n");
     printf("  0. Sair\n");
     printf("================================================================\n");
     printf("Opcao: ");
@@ -94,8 +96,10 @@ int main(void) {
                    arq, limite_carga);
 
             RegistroPaciente* regs = NULL;
+            Cronometro inicioCarga = iniciarCronometro();
             long long n = lerCSV234(arq, &regs, limite_carga);
             if (n == 0) {
+                imprimirTempo("para carregar o CSV", tempoDecorridoNs(inicioCarga));
                 printf("Nenhum registro valido carregado.\n");
                 free(regs);
                 pausar();
@@ -107,7 +111,8 @@ int main(void) {
             resetMetricas234();
             for (long long i = 0; i < n; i++)
                 inserirNo234(&raiz, regs[i]);
-            carregados = n;
+            long long tempoCarga = tempoDecorridoNs(inicioCarga);
+            carregados = g_metricas234.insercoes_ok;
             free(regs);
 
             printf("\n=== Carga concluida ===\n");
@@ -121,6 +126,7 @@ int main(void) {
             printf("  Duplicatas     : %lld\n", g_metricas234.insercoes_dup);
             printf("  Memoria (aprox): %.2f KB\n",
                    estimarMemoria234(raiz) / 1024.0);
+                 imprimirTempo("para carregar o CSV e montar a arvore 2-3-4", tempoCarga);
             pausar();
             break;
         }
@@ -140,11 +146,15 @@ int main(void) {
                 r.desfecho[strcspn(r.desfecho,"\r\n")]='\0';
 
             resetMetricas234();
-            if (inserirNo234(&raiz, r))
+            Cronometro inicioInsercao = iniciarCronometro();
+            bool inserido = inserirNo234(&raiz, r);
+            long long tempoInsercao = tempoDecorridoNs(inicioInsercao);
+            if (inserido)
                 printf("  Inserido. (comp=%lld, splits=%lld)\n",
                        g_metricas234.comparacoes, g_metricas234.splits);
             else
-                printf("  Duplicata rejeitada (chave ja existente).\n");
+                printf("  Duplicata rejeitada (ID ja existente).\n");
+            imprimirTempo("para inserir", tempoInsercao);
             pausar();
             break;
         }
@@ -153,10 +163,13 @@ int main(void) {
             Chave234 ch;
             lerChave(&ch);
             resetMetricas234();
+                Cronometro inicioBusca = iniciarCronometro();
             No234* no = buscar234(raiz, &ch);
+                long long tempoBusca = tempoDecorridoNs(inicioBusca);
             printf("  Resultado: %s (comparacoes=%lld)\n",
                    no ? "ENCONTRADO" : "NAO ENCONTRADO",
                    g_metricas234.comparacoes);
+                 imprimirTempo("para buscar", tempoBusca);
             if (!no) {
                 if (raiz == NULL)
                     printf("  Motivo: a arvore esta vazia; carregue o CSV ou insira um registro.\n");
@@ -181,11 +194,15 @@ int main(void) {
             Chave234 ch;
             lerChave(&ch);
             resetMetricas234();
-            if (removerNo234(&raiz, &ch))
+            Cronometro inicioRemocao = iniciarCronometro();
+            bool removido = removerNo234(&raiz, &ch);
+            long long tempoRemocao = tempoDecorridoNs(inicioRemocao);
+            if (removido)
                 printf("  Removido. (comparacoes=%lld)\n",
                        g_metricas234.comparacoes);
             else
                 printf("  Chave nao encontrada (arvore inalterada).\n");
+            imprimirTempo("para remover", tempoRemocao);
             ResultadoValidacao234 v = validar234(raiz);
             printf("  Validacao apos remocao: %s\n",
                    v.ok ? "OK" : v.mensagem);
@@ -233,6 +250,25 @@ int main(void) {
             raiz = NULL;
             carregados = 0;
             printf("  Arvore liberada.\n");
+            pausar();
+            break;
+
+        case 9:
+            if (raiz == NULL) {
+                printf("  A arvore esta vazia.\n");
+            } else {
+                printf("\n=== Chaves na raiz da arvore 2-3-4 ===\n");
+                for (int i = 0; i < raiz->numChaves; i++) {
+                    RegistroPaciente* registro = &raiz->chaves[i];
+                    printf("  Registro %d da raiz:\n", i + 1);
+                    printf("    Cidade/UF : %s\n", registro->chave.cidade_estado);
+                    printf("    Registro  : %s\n", registro->chave.data_registro);
+                    printf("    ID        : %lld\n", registro->chave.id);
+                    printf("    Sexo      : %s\n", registro->sexo);
+                    printf("    Nascimento: %s\n", registro->data_nascimento);
+                    printf("    Desfecho  : %s\n", registro->desfecho);
+                }
+            }
             pausar();
             break;
 
